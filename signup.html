@@ -5,10 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up</title>
     <link rel="stylesheet" href="styles.css"> <!-- Optional: Include your CSS file -->
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.12.min.js"></script> <!-- Load AWS SDK -->
+    
+    <!-- Load AWS SDK for JavaScript -->
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.12.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="config.js"></script> <!-- Include your config.js file -->
-    <script src="cognito.js"></script> <!-- Include your cognito.js file -->
+    <script src="dist/bundle.js" type="module"></script> <!-- Assuming Webpack outputs to /dist -->
 </head>
 <body>
     <div class="container">
@@ -31,10 +33,11 @@
         <p>Already have an account? <a href="login.html">Log in here</a></p>
     </div>
 
-    <!-- Load the Webpack bundle.js, which includes AWS Cognito and your signup logic -->
-    <script src="dist/bundle.js"></script> <!-- Assuming Webpack outputs to /dist -->
+    <script type="module">
+        import AWS from 'aws-sdk'; // AWS SDK
+        import { CognitoUserPool, CognitoUserAttribute } from 'amazon-cognito-identity-js'; // Cognito Identity SDK
 
-    <script>
+        // Function to handle signup
         function signup() {
             const email = document.getElementById('emailInputRegister').value;
             const password = document.getElementById('passwordInputRegister').value;
@@ -50,14 +53,14 @@
                 ClientId: _config.cognito.userPoolClientId,
             };
 
-            const userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
+            const userPool = new CognitoUserPool(poolData);
             const attributeList = [];
             const dataEmail = {
                 Name: 'email',
                 Value: email
             };
 
-            const attributeEmail = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataEmail);
+            const attributeEmail = new CognitoUserAttribute(dataEmail);
             attributeList.push(attributeEmail);
 
             userPool.signUp(email, password, attributeList, null, function(err, result) {
@@ -73,6 +76,7 @@
     </script>
 </body>
 </html>
+
 
 
 
