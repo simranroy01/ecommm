@@ -15,7 +15,7 @@
 <body>
     <div class="container">
         <h2>Sign Up</h2>
-        <form id="registrationForm" onsubmit="event.preventDefault(); signup();">
+        <form id="registrationForm">
             <div>
                 <label for="emailInputRegister">Email:</label>
                 <input type="email" id="emailInputRegister" required>
@@ -37,8 +37,8 @@
         import AWS from 'aws-sdk'; // AWS SDK
         import { CognitoUserPool, CognitoUserAttribute } from 'amazon-cognito-identity-js'; // Cognito Identity SDK
 
-        // Function to handle signup
-        function signup() {
+        // Define the signup function
+        window.signup = function() {
             const email = document.getElementById('emailInputRegister').value;
             const password = document.getElementById('passwordInputRegister').value;
             const confirmPassword = document.getElementById('password2InputRegister').value;
@@ -72,10 +72,17 @@
                 // Redirect to verification page (optional)
                 window.location.href = "verify.html"; // Update this if you have a verification page
             });
-        }
+        };
+
+        // Add an event listener to the form
+        document.getElementById('registrationForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            signup(); // Call the signup function
+        });
     </script>
 </body>
 </html>
+
 
 
 
