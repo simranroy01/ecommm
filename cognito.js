@@ -1,174 +1,116 @@
-const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
-const AWSCognito = require('aws-sdk/global');
-const $ = require('jquery');
-const config = require('./config.js'); // Changed _config to config
+// Importing AWS SDK
+import AWS from 'https://sdk.amazonaws.com/js/aws-sdk-2.1691.0.min.js';
 
-(function scopeWrapper() {
-    const signinUrl = '/signin.html';
-    const landingUrl = '/index.html';
+// Importing the Cognito Identity SDK from the specified URL
+import * as amazonCognitoIdentityJs from 'https://esm.run/amazon-cognito-identity-js'; // Updated import
 
-    const poolData = {
-        UserPoolId: config.cognito.userPoolId, // Updated to use config
-        ClientId: config.cognito.userPoolClientId, // Updated to use config
-    };
+// Importing configuration
+import { _config } from './config.js'; // Ensure the path to your config is correct
 
-    let userPool;
+!function($) {
+    var userPool;
 
-    if (!(config.cognito.userPoolId && config.cognito.userPoolClientId && config.cognito.region)) {
-        $('#noCognitoMessage').show();
-        return;
-    }
-
-    userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-    AWSCognito.config.region = config.cognito.region; // Updated to use config
-
-    function signOut() {
-        const currentUser = userPool.getCurrentUser();
-        if (currentUser) {
-            currentUser.signOut();
+    // Ensure userPool configuration is defined
+    if (_config.cognito.userPoolId && _config.cognito.userPoolClientId && _config.cognito.region) {
+        // Set up the Cognito User Pool
+        userPool = new amazonCognitoIdentityJs.CognitoUserPool({
+            UserPoolId: _config.cognito.userPoolId,
+            ClientId: _config.cognito.userPoolClientId
+        });
+        
+        // Set the region for AWSCognito
+        if (typeof AWSCognito !== 'undefined') {
+            AWSCognito.config.region = _config.cognito.region;
         }
-    }
 
-    function fetchCurrentAuthToken() {
-        return new Promise((resolve, reject) => {
-            const cognitoUser = userPool.getCurrentUser();
-            if (cognitoUser) {
-                cognitoUser.getSession((err, session) => {
-                    if (err) {
-                        reject(err);
-                    } else if (!session.isValid()) {
-                        resolve(null);
-                    } else {
-                        resolve(session.getIdToken().getJwtToken());
-                    }
-                });
-            } else {
-                resolve(null);
-            }
+        // Document Ready
+        $(function() {
+            $("#signinForm").submit(handleSignin);
+            $("#registrationForm").submit(handleRegister);
+            $("#verifyForm").submit(handleVerify);
         });
+    } else {
+        $("#noCognitoMessage").show(); // Show error message if config is not available
     }
 
-    function register(email, password, onSuccess, onFailure) {
-        const dataEmail = {
-            Name: 'email',
-            Value: email,
-        };
-        const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
-
-        userPool.signUp(
-            toUsername(email),
-            password,
-            [attributeEmail],
-            null,
-            (err, result) => {
-                if (!err) {
-                    onSuccess(result);
-                } else {
-                    onFailure(err);
-                }
-            }
-        );
-    }
-
-    function signin(email, password, onSuccess, onFailure) {
-        const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
-            Username: toUsername(email),
-            Password: password,
-        });
-
-        const cognitoUser = createCognitoUser(email);
-        cognitoUser.authenticateUser(authenticationDetails, {
-            onSuccess,
-            onFailure,
-        });
-    }
-
-    function verify(email, code, onSuccess, onFailure) {
-        createCognitoUser(email).confirmRegistration(code, true, (err, result) => {
-            if (!err) {
-                onSuccess(result);
-            } else {
-                onFailure(err);
-            }
-        });
-    }
-
-    function createCognitoUser(email) {
-        return new AmazonCognitoIdentity.CognitoUser({
-            Username: toUsername(email),
-            Pool: userPool,
+    function createCognitoUser(username) {
+        return new amazonCognitoIdentityJs.CognitoUser({
+            Username: username,
+            Pool: userPool
         });
     }
 
     function toUsername(email) {
-        return email.replace('@', '-at-');
+        return email.replace("@", "-at-");
     }
 
-    $(function onDocReady() {
-        $('#signinForm').submit(handleSignin);
-        $('#registrationForm').submit(handleRegister);
-        $('#verifyForm').submit(handleVerify);
-    });
-
     function handleSignin(event) {
-        const email = $('#emailInputSignin').val();
-        const password = $('#passwordInputSignin').val();
         event.preventDefault();
-        signin(
-            email,
-            password,
-            function signinSuccess() {
-                console.log('Successfully Logged In');
-                window.location.href = landingUrl; // Redirect to the landing page after login
+        const email = $("#emailInputSignin").val();
+        const password = $("#passwordInputSignin").val();
+
+        const authenticationDetails = new amazonCognitoIdentityJs.AuthenticationDetails({
+            Username: toUsername(email),
+            Password: password
+        });
+
+        const cognitoUser = createCognitoUser(email);
+        cognitoUser.authenticateUser(authenticationDetails, {
+            onSuccess: function() {
+                console.log("Successfully Logged In");
+                window.location.href = "/index.html";
             },
-            function signinError(err) {
-                alert(err);
+            onFailure: function(err) {
+                alert(err.message || JSON.stringify(err));
             }
-        );
+        });
     }
 
     function handleRegister(event) {
-        const email = $('#emailInputRegister').val();
-        const password = $('#passwordInputRegister').val();
-        const password2 = $('#password2InputRegister').val();
-
-        const onSuccess = (result) => {
-            const cognitoUser = result.user;
-            console.log('User name is ' + cognitoUser.getUsername());
-            alert('Registration successful. Please check your email for the verification code.');
-            window.location.href = 'verify.html'; // Redirect to the verification page
-        };
-
-        const onFailure = (err) => {
-            alert(err);
-        };
-
         event.preventDefault();
+        const email = $("#emailInputRegister").val();
+        const password = $("#passwordInputRegister").val();
+        const password2 = $("#password2InputRegister").val();
 
         if (password === password2) {
-            register(email, password, onSuccess, onFailure);
+            const attributeEmail = new amazonCognitoIdentityJs.CognitoUserAttribute({
+                Name: "email",
+                Value: email
+            });
+
+            userPool.signUp(toUsername(email), password, [attributeEmail], null, function(err, result) {
+                if (err) {
+                    alert(err.message || JSON.stringify(err));
+                } else {
+                    const cognitoUser = result.user;
+                    console.log("User name is " + cognitoUser.getUsername());
+                    alert("Registration successful. Please check your email for the verification code.");
+                    window.location.href = "verify.html";
+                }
+            });
         } else {
-            alert('Passwords do not match');
+            alert("Passwords do not match");
         }
     }
 
     function handleVerify(event) {
-        const email = $('#emailInputVerify').val();
-        const code = $('#codeInputVerify').val();
         event.preventDefault();
-        verify(
-            email,
-            code,
-            function verifySuccess() {
-                console.log('Successfully verified');
-                alert('Verification successful. You will now be redirected to the login page.');
-                window.location.href = signinUrl; // Redirect to the login page
-            },
-            function verifyError(err) {
-                alert(err);
+        const email = $("#emailInputVerify").val();
+        const code = $("#codeInputVerify").val();
+
+        const cognitoUser = createCognitoUser(email);
+        cognitoUser.confirmRegistration(code, true, function(err, result) {
+            if (err) {
+                alert(err.message || JSON.stringify(err));
+            } else {
+                console.log("Successfully verified");
+                alert("Verification successful. You will now be redirected to the login page.");
+                window.location.href = "/signin.html";
             }
-        );
+        });
     }
-})();
+
+}(jQuery);
+
 
 
