@@ -1,39 +1,42 @@
-/*global _config AmazonCognitoIdentity AWSCognito*/
-(function scopeWrapper($) {
-    var signinUrl = '/signin.html'; // Change this to your sign-in page
-    var landingUrl = '/index.html'; // Change this to your landing page
+/* global _config */
+const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
+const AWSCognito = require('aws-sdk/global');
+const $ = require('jquery'); // Assuming jQuery is installed in the project
 
-    var poolData = {
+(function scopeWrapper() {
+    const signinUrl = '/signin.html'; // Change this to your sign-in page
+    const landingUrl = '/index.html'; // Change this to your landing page
+
+    const poolData = {
         UserPoolId: _config.cognito.userPoolId,
-        ClientId: _config.cognito.userPoolClientId
+        ClientId: _config.cognito.userPoolClientId,
     };
 
-    var userPool;
+    let userPool;
 
     // Check if required configuration is available
-    if (!(_config.cognito.userPoolId &&
-          _config.cognito.userPoolClientId &&
-          _config.cognito.region)) {
+    if (!(_config.cognito.userPoolId && _config.cognito.userPoolClientId && _config.cognito.region)) {
         $('#noCognitoMessage').show();
         return;
     }
 
     userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
 
-    if (typeof AWSCognito !== 'undefined') {
-        AWSCognito.config.region = _config.cognito.region;
-    }
+    AWSCognito.config.region = _config.cognito.region;
 
     function signOut() {
-        userPool.getCurrentUser().signOut();
+        const currentUser = userPool.getCurrentUser();
+        if (currentUser) {
+            currentUser.signOut();
+        }
     }
 
     function fetchCurrentAuthToken() {
-        return new Promise(function (resolve, reject) {
-            var cognitoUser = userPool.getCurrentUser();
+        return new Promise((resolve, reject) => {
+            const cognitoUser = userPool.getCurrentUser();
 
             if (cognitoUser) {
-                cognitoUser.getSession(function (err, session) {
+                cognitoUser.getSession((err, session) => {
                     if (err) {
                         reject(err);
                     } else if (!session.isValid()) {
@@ -53,14 +56,18 @@
      */
 
     function register(email, password, onSuccess, onFailure) {
-        var dataEmail = {
+        const dataEmail = {
             Name: 'email',
-            Value: email
+            Value: email,
         };
-        var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+        const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
 
-        userPool.signUp(toUsername(email), password, [attributeEmail], null,
-            function (err, result) {
+        userPool.signUp(
+            toUsername(email),
+            password,
+            [attributeEmail],
+            null,
+            (err, result) => {
                 if (!err) {
                     onSuccess(result);
                 } else {
@@ -71,20 +78,20 @@
     }
 
     function signin(email, password, onSuccess, onFailure) {
-        var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
+        const authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails({
             Username: toUsername(email),
-            Password: password
+            Password: password,
         });
 
-        var cognitoUser = createCognitoUser(email);
+        const cognitoUser = createCognitoUser(email);
         cognitoUser.authenticateUser(authenticationDetails, {
-            onSuccess: onSuccess,
-            onFailure: onFailure
+            onSuccess,
+            onFailure,
         });
     }
 
     function verify(email, code, onSuccess, onFailure) {
-        createCognitoUser(email).confirmRegistration(code, true, function (err, result) {
+        createCognitoUser(email).confirmRegistration(code, true, (err, result) => {
             if (!err) {
                 onSuccess(result);
             } else {
@@ -96,7 +103,7 @@
     function createCognitoUser(email) {
         return new AmazonCognitoIdentity.CognitoUser({
             Username: toUsername(email),
-            Pool: userPool
+            Pool: userPool,
         });
     }
 
@@ -115,10 +122,12 @@
     });
 
     function handleSignin(event) {
-        var email = $('#emailInputSignin').val();
-        var password = $('#passwordInputSignin').val();
+        const email = $('#emailInputSignin').val();
+        const password = $('#passwordInputSignin').val();
         event.preventDefault();
-        signin(email, password,
+        signin(
+            email,
+            password,
             function signinSuccess() {
                 console.log('Successfully Logged In');
                 window.location.href = landingUrl; // Redirect to the landing page after login
@@ -130,19 +139,21 @@
     }
 
     function handleRegister(event) {
-        var email = $('#emailInputRegister').val();
-        var password = $('#passwordInputRegister').val();
-        var password2 = $('#password2InputRegister').val();
+        const email = $('#emailInputRegister').val();
+        const password = $('#passwordInputRegister').val();
+        const password2 = $('#password2InputRegister').val();
 
-        var onSuccess = function (result) {
-            var cognitoUser = result.user;
+        const onSuccess = (result) => {
+            const cognitoUser = result.user;
             console.log('User name is ' + cognitoUser.getUsername());
             alert('Registration successful. Please check your email for the verification code.');
             window.location.href = 'verify.html'; // Redirect to the verification page
         };
-        var onFailure = function (err) {
+
+        const onFailure = (err) => {
             alert(err);
         };
+
         event.preventDefault();
 
         if (password === password2) {
@@ -153,11 +164,13 @@
     }
 
     function handleVerify(event) {
-        var email = $('#emailInputVerify').val();
-        var code = $('#codeInputVerify').val();
+        const email = $('#emailInputVerify').val();
+        const code = $('#codeInputVerify').val();
         event.preventDefault();
-        verify(email, code,
-            function verifySuccess(result) {
+        verify(
+            email,
+            code,
+            function verifySuccess() {
                 console.log('Successfully verified');
                 alert('Verification successful. You will now be redirected to the login page.');
                 window.location.href = signinUrl; // Redirect to the login page
@@ -167,5 +180,6 @@
             }
         );
     }
-}(jQuery));
+})();
+
 

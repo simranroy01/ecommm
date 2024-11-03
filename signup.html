@@ -6,10 +6,6 @@
     <title>Sign Up</title>
     <link rel="stylesheet" href="styles.css"> <!-- Optional: Include your CSS file -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1308.0.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/amazon-cognito-identity-js/5.2.4/amazon-cognito-identity.min.js"></script>
-    <script src="config.js"></script> <!-- Include your config.js file -->
-    <script src="cognito.js"></script> <!-- Include your cognito.js file -->
 </head>
 <body>
     <div class="container">
@@ -32,6 +28,9 @@
         <p>Already have an account? <a href="login.html">Log in here</a></p>
     </div>
 
+    <!-- Load the Webpack bundle.js, which includes AWS Cognito and your signup logic -->
+    <script src="dist/bundle.js"></script> <!-- Assuming Webpack outputs to /dist -->
+
     <script>
         function signup() {
             const email = document.getElementById('emailInputRegister').value;
@@ -44,19 +43,19 @@
             }
 
             // Call your signup logic here
-            var poolData = {
+            const poolData = {
                 UserPoolId: _config.cognito.userPoolId,
                 ClientId: _config.cognito.userPoolClientId,
             };
-            var userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
 
-            var attributeList = [];
-            var dataEmail = {
+            const userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
+            const attributeList = [];
+            const dataEmail = {
                 Name: 'email',
                 Value: email
             };
 
-            var attributeEmail = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataEmail);
+            const attributeEmail = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataEmail);
             attributeList.push(attributeEmail);
 
             userPool.signUp(email, password, attributeList, null, function(err, result) {
