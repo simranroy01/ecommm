@@ -3,57 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Product</title>
+    <title>Bookstore Admin Page</title>
     <style>
-        h2, label, button {
-            font-family: Arial, Helvetica, sans-serif;
-            font-size: 20px;
-            margin-left: 40px;
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f7f7f7;
+            color: #333;
         }
-        table {
-          
-            border-collapse: collapse;
+        
+        h2 {
+            color: #333;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        /* Add Product Form */
+        .form-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-container h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .form-group input {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .form-container button {
+            padding: 10px;
+            font-size: 18px;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .form-container button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Product Card Layout */
+        .product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .product-card {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .product-card h4 {
+            font-size: 18px;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .product-card p {
+            font-size: 16px;
+            color: #777;
+        }
+
+        .product-card button {
+            padding: 8px 16px;
+            font-size: 14px;
+            color: #fff;
+            background-color: #dc3545;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
             margin-top: 15px;
-            margin-left: 40px;
         }
 
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
+        .product-card button:hover {
+            background-color: #b21f2d;
         }
 
-        th {
-            background-color: #f2f2f2;
-        }
     </style>
 </head>
 <body>
 
-    <h2>Add Product:</h2>
+    <h2>Bookstore Admin Page</h2>
 
-    <form id="productForm">
-        <label for="productCode">Product Code:</label>
-        <input type="text" id="productCode" required>
+    <div class="container">
+        <!-- Add Product Form -->
+        <div class="form-container">
+            <h3>Add a New Product</h3>
+            <form id="productForm">
+                <div class="form-group">
+                    <label for="productCode">Product Code</label>
+                    <input type="text" id="productCode" placeholder="Enter Product Code" required>
+                </div>
+                <div class="form-group">
+                    <label for="price">Price</label>
+                    <input type="number" id="price" placeholder="Enter Product Price" required>
+                </div>
+                <button type="button" onclick="addProduct()">Add Product</button>
+            </form>
+        </div>
 
-        <label for="price">Price:</label>
-        <input type="number" id="price" required>
-
-        <button type="button" onclick="addProduct()">Add Product</button>
-    </form>
-
-    <h2>Product List:</h2>
-
-    <table id="productTable">
-        <thead>
-            <tr>
-                <th>Product Code</th>
-                <th>Price</th>
-                <th>Created At</th>
-            </tr>
-        </thead>
-        <tbody id="productTableBody"></tbody>
-    </table>
+        <!-- Product Display Grid -->
+        <div class="product-grid" id="productGrid">
+            <!-- Product cards will be injected here dynamically -->
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -61,15 +154,14 @@
         });
 
         function addProduct() {
-            var productCode = document.getElementById('productCode').value;
-            var price = document.getElementById('price').value;
+            const productCode = document.getElementById('productCode').value;
+            const price = document.getElementById('price').value;
 
-            var data = {
+            const data = {
                 operation: 'addProduct',
                 productCode: productCode,
                 price: price
             };
-
 
             fetch('https://9n7xdpv8o4.execute-api.us-east-1.amazonaws.com/dev/getData', {
                 method: 'POST',
@@ -80,12 +172,10 @@
             })
             .then(response => response.json())
             .then(result => {
-                
                 alert(JSON.parse(result.body));
-               
-                // Clear form fields
                 document.getElementById('productCode').value = '';
                 document.getElementById('price').value = '';
+                fetchProducts(); // Refresh product list after adding
             })
             .catch(error => {
                 console.error('Error adding product:', error);
@@ -93,46 +183,71 @@
         }
 
         function fetchProducts() {
-
-            var requestData = {
-               operation: 'listProduct'
-            };
+            const requestData = { operation: 'listProduct' };
 
             fetch('https://9n7xdpv8o4.execute-api.us-east-1.amazonaws.com/dev/getData', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(requestData),
             })
             .then(response => response.json())
             .then(responseData => {
                 const products = JSON.parse(responseData.body);
+                const productGrid = document.getElementById('productGrid');
+                productGrid.innerHTML = ''; // Clear existing products
 
-                // Update product table
                 products.forEach(product => {
-                    updateProductTable(product);
-
+                    createProductCard(product);
                 });
-               
             })
             .catch(error => {
                 console.error('Error fetching products:', error);
             });
         }
 
-        function updateProductTable(product) {
-            var tableBody = document.getElementById('productTableBody');
-            var row = tableBody.insertRow();
+        function createProductCard(product) {
+            const productGrid = document.getElementById('productGrid');
+            const card = document.createElement('div');
+            card.className = 'product-card';
 
-            var cell1 = row.insertCell(0);
-            var cell2 = row.insertCell(1);
-            var cell3 = row.insertCell(2);
+            const productCode = document.createElement('h4');
+            productCode.textContent = `Code: ${product.productCode}`;
+            card.appendChild(productCode);
 
-            cell1.textContent = product.productCode;
-            cell2.textContent = product.price;
-            cell3.textContent = product.createdAt;
-            
+            const price = document.createElement('p');
+            price.textContent = `Price: $${product.price}`;
+            card.appendChild(price);
+
+            const createdAt = document.createElement('p');
+            createdAt.textContent = `Added on: ${product.createdAt}`;
+            card.appendChild(createdAt);
+
+            const deleteButton = document.createElement('button');
+            deleteButton.textContent = 'Delete';
+            deleteButton.onclick = function() {
+                deleteProduct(product.productCode);
+            };
+            card.appendChild(deleteButton);
+
+            productGrid.appendChild(card);
+        }
+
+        function deleteProduct(productCode) {
+            const data = { operation: 'deleteProduct', productCode: productCode };
+
+            fetch('https://9n7xdpv8o4.execute-api.us-east-1.amazonaws.com/dev/getData', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data),
+            })
+            .then(response => response.json())
+            .then(result => {
+                alert(JSON.parse(result.body));
+                fetchProducts(); // Refresh product list after deletion
+            })
+            .catch(error => {
+                console.error('Error deleting product:', error);
+            });
         }
     </script>
 
