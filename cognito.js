@@ -1,5 +1,4 @@
 /*global _config AmazonCognitoIdentity AWSCognito*/
-
 (function scopeWrapper($) {
     var signinUrl = '/signin.html'; // Change this to your sign-in page
     var landingUrl = '/index.html'; // Change this to your landing page
