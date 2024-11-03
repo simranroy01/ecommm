@@ -1,28 +1,26 @@
-// cognito.js
 const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
 const AWSCognito = require('aws-sdk/global');
 const $ = require('jquery');
-const _config = require('./config.js');
+const config = require('./config.js'); // Changed _config to config
 
 (function scopeWrapper() {
-    const signinUrl = '/signin.html'; // Change this to your sign-in page
-    const landingUrl = '/index.html'; // Change this to your landing page
+    const signinUrl = '/signin.html';
+    const landingUrl = '/index.html';
 
     const poolData = {
-        UserPoolId: _config.cognito.userPoolId,
-        ClientId: _config.cognito.userPoolClientId,
+        UserPoolId: config.cognito.userPoolId, // Updated to use config
+        ClientId: config.cognito.userPoolClientId, // Updated to use config
     };
 
     let userPool;
 
-    // Check if required configuration is available
-    if (!(_config.cognito.userPoolId && _config.cognito.userPoolClientId && _config.cognito.region)) {
+    if (!(config.cognito.userPoolId && config.cognito.userPoolClientId && config.cognito.region)) {
         $('#noCognitoMessage').show();
         return;
     }
 
     userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-    AWSCognito.config.region = _config.cognito.region;
+    AWSCognito.config.region = config.cognito.region; // Updated to use config
 
     function signOut() {
         const currentUser = userPool.getCurrentUser();
@@ -34,7 +32,6 @@ const _config = require('./config.js');
     function fetchCurrentAuthToken() {
         return new Promise((resolve, reject) => {
             const cognitoUser = userPool.getCurrentUser();
-
             if (cognitoUser) {
                 cognitoUser.getSession((err, session) => {
                     if (err) {
@@ -50,10 +47,6 @@ const _config = require('./config.js');
             }
         });
     }
-
-    /*
-     * Cognito User Pool functions
-     */
 
     function register(email, password, onSuccess, onFailure) {
         const dataEmail = {
@@ -110,10 +103,6 @@ const _config = require('./config.js');
     function toUsername(email) {
         return email.replace('@', '-at-');
     }
-
-    /*
-     * Event Handlers
-     */
 
     $(function onDocReady() {
         $('#signinForm').submit(handleSignin);
