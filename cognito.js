@@ -1,7 +1,9 @@
-/* global _config */
-const AmazonCognitoIdentity = require('amazon-cognito-identity-js');
-const AWSCognito = require('aws-sdk/global');
-const $ = require('jquery'); // Assuming jQuery is installed in the project
+// cognito.js
+import AmazonCognitoIdentity from 'amazon-cognito-identity-js';
+import AWSCognito from 'aws-sdk/global';
+import $ from 'jquery'; // Assuming jQuery is installed in the project
+// Assuming _config is globally defined or imported from a config module
+// import _config from './config.js'; // Uncomment this if you're importing config.js
 
 (function scopeWrapper() {
     const signinUrl = '/signin.html'; // Change this to your sign-in page
@@ -21,7 +23,6 @@ const $ = require('jquery'); // Assuming jQuery is installed in the project
     }
 
     userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
-
     AWSCognito.config.region = _config.cognito.region;
 
     function signOut() {
@@ -112,7 +113,7 @@ const $ = require('jquery'); // Assuming jQuery is installed in the project
     }
 
     /*
-     *  Event Handlers
+     * Event Handlers
      */
 
     $(function onDocReady() {
