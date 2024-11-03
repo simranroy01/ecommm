@@ -1,5 +1,5 @@
 // Importing the configuration
-import _config from './config.js'; // Ensure this path is correct
+const _config = require('./config.js'); // Ensure this path is correct
 
 !function(n) {
     var o, e = {
