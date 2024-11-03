@@ -11,6 +11,7 @@
 
     var userPool;
 
+    // Check if required configuration is available
     if (!(_config.cognito.userPoolId &&
           _config.cognito.userPoolClientId &&
           _config.cognito.region)) {
@@ -168,3 +169,4 @@
         );
     }
 }(jQuery));
+

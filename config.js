@@ -6,3 +6,4 @@ var _config = {
         region: 'us-east-1' // Replace with your AWS region
     }
 };
+
