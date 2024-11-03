@@ -10,7 +10,7 @@
     <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.12.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="config.js"></script> <!-- Include your config.js file -->
-    <script src="dist/bundle.js" type="module"></script> <!-- Assuming Webpack outputs to /dist -->
+    <script src="https://cdn.rawgit.com/amazon-archives/amazon-cognito-identity-js/master/dist/amazon-cognito-identity.min.js"></script> <!-- Load Cognito SDK -->
 </head>
 <body>
     <div class="container">
@@ -33,55 +33,56 @@
         <p>Already have an account? <a href="login.html">Log in here</a></p>
     </div>
 
-    <script type="module">
-        import AWS from 'aws-sdk'; // AWS SDK
-        import { CognitoUserPool, CognitoUserAttribute } from 'amazon-cognito-identity-js'; // Cognito Identity SDK
+    <script>
+        // Ensure AWS SDK is loaded before this script runs
+        window.onload = function() {
+            // Define the signup function
+            window.signup = function() {
+                const email = document.getElementById('emailInputRegister').value;
+                const password = document.getElementById('passwordInputRegister').value;
+                const confirmPassword = document.getElementById('password2InputRegister').value;
 
-        // Define the signup function
-        window.signup = function() {
-            const email = document.getElementById('emailInputRegister').value;
-            const password = document.getElementById('passwordInputRegister').value;
-            const confirmPassword = document.getElementById('password2InputRegister').value;
-
-            if (password !== confirmPassword) {
-                alert("Passwords do not match.");
-                return;
-            }
-
-            const poolData = {
-                UserPoolId: _config.cognito.userPoolId,
-                ClientId: _config.cognito.userPoolClientId,
-            };
-
-            const userPool = new CognitoUserPool(poolData);
-            const attributeList = [];
-            const dataEmail = {
-                Name: 'email',
-                Value: email
-            };
-
-            const attributeEmail = new CognitoUserAttribute(dataEmail);
-            attributeList.push(attributeEmail);
-
-            userPool.signUp(email, password, attributeList, null, function(err, result) {
-                if (err) {
-                    alert(err.message || JSON.stringify(err));
+                if (password !== confirmPassword) {
+                    alert("Passwords do not match.");
                     return;
                 }
-                alert("Sign up successful! Please check your email for a confirmation code.");
-                // Redirect to verification page (optional)
-                window.location.href = "verify.html"; // Update this if you have a verification page
+
+                const poolData = {
+                    UserPoolId: _config.cognito.userPoolId,
+                    ClientId: _config.cognito.userPoolClientId,
+                };
+
+                const userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+                const attributeList = [];
+                const dataEmail = {
+                    Name: 'email',
+                    Value: email
+                };
+
+                const attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+                attributeList.push(attributeEmail);
+
+                userPool.signUp(email, password, attributeList, null, function(err, result) {
+                    if (err) {
+                        alert(err.message || JSON.stringify(err));
+                        return;
+                    }
+                    alert("Sign up successful! Please check your email for a confirmation code.");
+                    // Redirect to verification page (optional)
+                    window.location.href = "verify.html"; // Update this if you have a verification page
+                });
+            };
+
+            // Add an event listener to the form
+            document.getElementById('registrationForm').addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent default form submission
+                signup(); // Call the signup function
             });
         };
-
-        // Add an event listener to the form
-        document.getElementById('registrationForm').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
-            signup(); // Call the signup function
-        });
     </script>
 </body>
 </html>
+
 
 
 
