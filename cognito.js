@@ -1,7 +1,8 @@
 /*global _config AmazonCognitoIdentity AWSCognito*/
 
 (function scopeWrapper($) {
-    var signinUrl = '/signin.html';
+    var signinUrl = '/signin.html'; // Change this to your sign-in page
+    var landingUrl = '/index.html'; // Change this to your landing page
 
     var poolData = {
         UserPoolId: _config.cognito.userPoolId,
@@ -120,7 +121,7 @@
         signin(email, password,
             function signinSuccess() {
                 console.log('Successfully Logged In');
-                window.location.href = 'ride.html'; // Change this to your landing page
+                window.location.href = landingUrl; // Redirect to the landing page after login
             },
             function signinError(err) {
                 alert(err);

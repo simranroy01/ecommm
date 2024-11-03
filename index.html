@@ -4,122 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bookstore Admin Page</title>
-    <style>
-        /* General Styles */
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f7f7f7;
-            color: #333;
-        }
-        
-        h2 {
-            color: #333;
-            text-align: center;
-            margin-top: 20px;
-        }
-        
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        /* Add Product Form */
-        .form-container {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            margin-bottom: 30px;
-        }
-
-        .form-container h3 {
-            font-size: 24px;
-            margin-bottom: 15px;
-            color: #333;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .form-group input {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        .form-container button {
-            padding: 10px;
-            font-size: 18px;
-            color: #fff;
-            background-color: #007bff;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-
-        .form-container button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Product Card Layout */
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 20px;
-        }
-
-        .product-card {
-            background-color: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .product-card h4 {
-            font-size: 18px;
-            margin: 10px 0;
-            color: #333;
-        }
-
-        .product-card p {
-            font-size: 16px;
-            color: #777;
-        }
-
-        .product-card button {
-            padding: 8px 16px;
-            font-size: 14px;
-            color: #fff;
-            background-color: #dc3545;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 15px;
-        }
-
-        .product-card button:hover {
-            background-color: #b21f2d;
-        }
-
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 
@@ -148,10 +33,21 @@
         </div>
     </div>
 
+    <script src="config.js"></script>
+    <script src="cognito.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             fetchProducts();
+            checkUserLoggedIn(); // Check if user is logged in
         });
+
+        function checkUserLoggedIn() {
+            const currentUser = getCurrentUser(); // Function from cognito.js to get the current user
+            if (!currentUser) {
+                alert('You need to be logged in to access this page.');
+                window.location.href = 'login.html'; // Redirect to login page
+            }
+        }
 
         function addProduct() {
             const productCode = document.getElementById('productCode').value;
