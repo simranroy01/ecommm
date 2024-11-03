@@ -12,7 +12,7 @@
 <body>
     <div class="container">
         <h2>Sign Up</h2>
-        <form id="registrationForm">
+        <form id="registrationForm" onsubmit="event.preventDefault(); signup();">
             <div>
                 <label for="emailInputRegister">Email:</label>
                 <input type="email" id="emailInputRegister" required>
@@ -29,6 +29,46 @@
         </form>
         <p>Already have an account? <a href="login.html">Log in here</a></p>
     </div>
+
+    <script>
+        function signup() {
+            const email = document.getElementById('emailInputRegister').value;
+            const password = document.getElementById('passwordInputRegister').value;
+            const confirmPassword = document.getElementById('password2InputRegister').value;
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match.");
+                return;
+            }
+
+            // Call your signup logic here
+            var poolData = {
+                UserPoolId: _config.cognito.userPoolId,
+                ClientId: _config.cognito.userPoolClientId,
+            };
+            var userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
+
+            var attributeList = [];
+            var dataEmail = {
+                Name: 'email',
+                Value: email
+            };
+
+            var attributeEmail = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserAttribute(dataEmail);
+            attributeList.push(attributeEmail);
+
+            userPool.signUp(email, password, attributeList, null, function(err, result) {
+                if (err) {
+                    alert(err.message || JSON.stringify(err));
+                    return;
+                }
+                alert("Sign up successful! Please check your email for a confirmation code.");
+                // Redirect to verification page (optional)
+                window.location.href = "verify.html"; // Update this if you have a verification page
+            });
+        }
+    </script>
 </body>
 </html>
+
 

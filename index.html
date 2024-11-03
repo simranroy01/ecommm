@@ -250,6 +250,24 @@
             });
         }
     </script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1.12.min.js"></script>
+    <script>
+        // Initialize Cognito
+        AWS.config.region = 'us-east-1'; // Your region
+        const poolData = {
+            UserPoolId: 'us-east-1_example', // Your user pool id here
+            ClientId: '1example23456', // Your client id here
+        };
+        const userPool = new AWSCognito.CognitoIdentityServiceProvider.CognitoUserPool(poolData);
+        
+        // Check if user is authenticated
+        const currentUser = userPool.getCurrentUser();
+        if (!currentUser) {
+            // Redirect to login if not authenticated
+            window.location.href = 'login.html';
+        }
+    </script>
+    
 
 </body>
 </html>
